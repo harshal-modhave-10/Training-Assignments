@@ -29,10 +29,12 @@ const VOUCHER_STRATEGIES = Object.freeze({
 
 /**
  * Pipeline Step 1: Resolve the base rate for the subscription tier.
- * @param {string} plan
+ * Accepts tier string ('BASIC', 'PRO', 'ENTERPRISE') or custom numeric base rate for deficit testing.
+ * @param {string|number} plan
  * @returns {number}
  */
-const resolveBaseRate = (plan) => BASE_RATES[plan];
+const resolveBaseRate = (plan) =>
+  typeof plan === 'number' ? plan : BASE_RATES[plan];
 
 /**
  * Pipeline Step 2: Apply longevity discount based on subscription duration.
@@ -58,12 +60,11 @@ const applyVoucherDeduction = (rate, voucher) => {
     return rate;
   }
 
-  const strategy = VOUCHER_STRATEGIES[voucher];
-  if (!strategy) {
+  if (typeof voucher !== 'string' || !Object.prototype.hasOwnProperty.call(VOUCHER_STRATEGIES, voucher)) {
     throw new InvalidVoucherError(`Invalid or expired voucher: ${voucher}`);
   }
 
-  return strategy(rate);
+  return VOUCHER_STRATEGIES[voucher](rate);
 };
 
 /**

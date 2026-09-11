@@ -325,4 +325,98 @@ describe('SubscriptionPricingService', () => {
       expect(service.calculatePrice('BASIC', 37, 'HALFPRICE')).toBe(18.75);
     });
   });
+
+  describe('Critical Adversarial Test Suite: 4 Selected Scenarios', () => {
+    /**
+     * 1. Floating-Point Precision
+     * Engineering Justification: Validates half-up rounding on fractional cent outputs.
+     * Prevents binary floating-point representation drift (IEEE-754) when combining
+     * multi-step percentage discounts (e.g. 25% longevity then 50% voucher).
+     */
+    describe('1. Floating-Point Precision: Half-Up Rounding on Fractional Cent Outputs', () => {
+      it.each([
+        ['BASIC', 37, 'HALFPRICE', 18.75, '$50.00 * 0.75 * 0.50 = $18.75 (exact fractional cent half-up)'],
+        ['PRO', 37, 'HALFPRICE', 56.25, '$150.00 * 0.75 * 0.50 = $56.25 (exact fractional cent half-up)'],
+        ['ENTERPRISE', 37, 'HALFPRICE', 187.50, '$500.00 * 0.75 * 0.50 = $187.50 (exact fractional cent half-up)'],
+        ['BASIC', 13, 'HALFPRICE', 22.50, '$50.00 * 0.90 * 0.50 = $22.50 (intermediate fractional half-up)'],
+        ['PRO', 13, 'HALFPRICE', 67.50, '$150.00 * 0.90 * 0.50 = $67.50 (intermediate fractional half-up)'],
+        ['ENTERPRISE', 13, 'HALFPRICE', 225.00, '$500.00 * 0.90 * 0.50 = $225.00 (intermediate fractional half-up)'],
+      ])('should accurately compute %s at %d months with %s to $%d (%s)', (plan, months, voucher, expected) => {
+        expect(service.calculatePrice(plan, months, voucher)).toBe(expected);
+      });
+    });
+
+    /**
+     * 2. Month Boundary Limits
+     * Engineering Justification: Tests exact boundary transitions (e.g., 12 vs 13 months, 36 vs 37 months).
+     * Guards against off-by-one errors (> vs >=) at critical financial threshold boundaries.
+     */
+    describe('2. Month Boundary Limits: Exact Boundary Transitions (12 vs 13, 36 vs 37 Months)', () => {
+      it.each([
+        // 12 vs 13 Months Boundary: 0% vs 10% Discount
+        ['BASIC', 12, 50.00, 'BASIC at 12 months: threshold not met (0% discount, $50.00)'],
+        ['BASIC', 13, 45.00, 'BASIC at 13 months: threshold met (10% discount, $45.00)'],
+        ['PRO', 12, 150.00, 'PRO at 12 months: threshold not met (0% discount, $150.00)'],
+        ['PRO', 13, 135.00, 'PRO at 13 months: threshold met (10% discount, $135.00)'],
+        ['ENTERPRISE', 12, 500.00, 'ENTERPRISE at 12 months: threshold not met (0% discount, $500.00)'],
+        ['ENTERPRISE', 13, 450.00, 'ENTERPRISE at 13 months: threshold met (10% discount, $450.00)'],
+
+        // 36 vs 37 Months Boundary: 10% vs 25% Discount
+        ['BASIC', 36, 45.00, 'BASIC at 36 months: upper limit of 10% discount tier ($45.00)'],
+        ['BASIC', 37, 37.50, 'BASIC at 37 months: entry into 25% discount tier ($37.50)'],
+        ['PRO', 36, 135.00, 'PRO at 36 months: upper limit of 10% discount tier ($135.00)'],
+        ['PRO', 37, 112.50, 'PRO at 37 months: entry into 25% discount tier ($112.50)'],
+        ['ENTERPRISE', 36, 450.00, 'ENTERPRISE at 36 months: upper limit of 10% discount tier ($450.00)'],
+        ['ENTERPRISE', 37, 375.00, 'ENTERPRISE at 37 months: entry into 25% discount tier ($375.00)'],
+      ])('should resolve %s at boundary %d months to exactly $%d (%s)', (plan, months, expected) => {
+        expect(service.calculatePrice(plan, months)).toBe(expected);
+      });
+    });
+
+    /**
+     * 3. Floor Enforcement
+     * Engineering Justification: Ensures discounts dropping total below $0 round up to $0.00.
+     * Enforces the business floor constraint so account totals cannot produce negative balances.
+     */
+    describe('3. Floor Enforcement: Ensures Discounts Dropping Total Below $0 Round Up to $0.00', () => {
+      it.each([
+        [10.00, 0, 'SAVE20', 0.00, 'base rate $10.00 minus $20.00 voucher floors at $0.00'],
+        [15.00, 0, 'SAVE20', 0.00, 'base rate $15.00 minus $20.00 voucher floors at $0.00'],
+        [0.00, 0, 'SAVE20', 0.00, 'base rate $0.00 minus $20.00 voucher floors at $0.00'],
+        [10.00, 13, 'SAVE20', 0.00, 'discounted $9.00 minus $20.00 voucher floors at $0.00'],
+        [20.00, 37, 'SAVE20', 0.00, 'discounted $15.00 minus $20.00 voucher floors at $0.00'],
+        ['BASIC', 37, 'SAVE20', 17.50, 'standard maximum valid deduction ($50 * 0.75 - 20) yields $17.50 >= $0.00'],
+      ])('should floor rate to $%d when initial rate is %p with %s (%s)', (rateOrPlan, months, voucher, expected) => {
+        expect(service.calculatePrice(rateOrPlan, months, voucher)).toBe(expected);
+      });
+    });
+
+    /**
+     * 4. Unknown Voucher Handlers
+     * Engineering Justification: Confirms invalid input types fail safely with InvalidVoucherError.
+     * Prevents unhandled exceptions, prototype poisoning, and improper voucher stacking.
+     */
+    describe('4. Unknown Voucher Handlers: Confirms Invalid Input Types Fail Safely with InvalidVoucherError', () => {
+      it.each([
+        ['DISCOUNT10', 'unrecognized voucher code'],
+        ['EXPIRED', 'expired voucher code'],
+        ['SAVE20_EXPIRED', 'expired voucher token prefix'],
+        ['SAVE20,HALFPRICE', 'concatenated voucher stacking attempt'],
+        ['SAVE20 HALFPRICE', 'space-separated voucher stacking attempt'],
+        ['toString', 'prototype function property injection'],
+        ['valueOf', 'prototype method property injection'],
+        ['__proto__', 'prototype key access attempt'],
+        ['constructor', 'constructor property access attempt'],
+        [' save20 ', 'padded leading/trailing whitespace voucher'],
+        ['', 'empty string voucher'],
+        ['   ', 'whitespace-only voucher string'],
+        [12345, 'numeric voucher input'],
+        [true, 'boolean voucher input'],
+        [{}, 'object voucher input'],
+        [['SAVE20'], 'array voucher input'],
+      ])('should strictly throw InvalidVoucherError when voucher argument is %p (%s)', (invalidVoucher) => {
+        expect(() => service.calculatePrice('BASIC', 0, invalidVoucher)).toThrow(InvalidVoucherError);
+      });
+    });
+  });
 });
