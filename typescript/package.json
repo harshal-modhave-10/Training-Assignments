@@ -1,0 +1,21 @@
+{
+  "name": "rsl-training-26-harshal-modhave",
+  "version": "1.0.0",
+  "description": "Organization Management System in TypeScript",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "run:compiled": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0"
+  }
+}
