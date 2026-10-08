@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GitHub Repository Tracker</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>GitHub Repository Tracker</h1>
+      <form id="search-form">
+        <input 
+          type="text" 
+          id="username-input" 
+          placeholder="Enter GitHub Username (e.g., harshal-modhave-10)" 
+          required 
+        />
+        <button type="submit">Track Repositories</button>
+      </form>
+    </header>
+
+    <!-- Auto-Refresh Status Banner -->
+    <div id="refresh-status" class="hidden"></div>
+
+    <!-- Error & Info Messages -->
+    <div id="message-container" class="hidden"></div>
+
+    <!-- Owner Profile Section -->
+    <section id="owner-container" class="hidden"></section>
+
+    <!-- Repositories List Section -->
+    <section id="repos-container" class="hidden">
+      <h2>Public Repositories</h2>
+      <div id="repos-grid"></div>
+    </section>
+  </div>
+
+  <!-- Entry Point using ES Modules -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
