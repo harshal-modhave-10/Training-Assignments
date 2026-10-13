@@ -1,0 +1,178 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 20px 0 10px 0;
+  color: #333;
+}
+
+/* Card Styling */
+.card {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.input-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 12px;
+  background-color: #fff;
+}
+
+.input-icon {
+  margin-right: 10px;
+}
+
+.todo-input-field {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 1rem;
+}
+
+/* Button Styling */
+.btn {
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #008b8b; /* Teal color matching prototype */
+  color: white;
+  width: 100%;
+}
+
+/* Filter Section */
+.filter-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.btn-filter {
+  flex: 1;
+  background-color: #008b8b;
+  color: white;
+  font-weight: 500;
+}
+
+.btn-filter.active {
+  opacity: 1;
+}
+
+.btn-filter.inactive {
+  opacity: 0.6; /* 0.6 opacity for non-selected filter */
+}
+
+/* Todo Item Styling */
+.item-row,
+.edit-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.todo-text {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Completed task styling: strike-through + green text */
+.completed-text {
+  text-decoration: line-through;
+  color: #2e7d32;
+}
+
+.todo-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: black;
+  cursor: pointer;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-edit {
+  background-color: #c0c0c0; /* Silver */
+  color: #000;
+  padding: 6px 12px;
+}
+
+.btn-delete {
+  background-color: #d32f2f; /* Red */
+  color: #fff;
+  padding: 6px 12px;
+}
+
+.btn-confirm {
+  background-color: #2e7d32;
+  color: #fff;
+  padding: 6px 12px;
+}
+
+.btn-cancel {
+  background-color: #757575;
+  color: #fff;
+  padding: 6px 12px;
+}
+
+.edit-input-field {
+  flex: 1;
+  margin-right: 10px;
+  padding: 6px 10px;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.empty-message {
+  padding: 20px;
+  font-weight: bold;
+  color: #666;
+}
